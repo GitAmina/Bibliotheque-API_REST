@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'http://192.168.11.107:8080/bibliotheque/api/auth';
+const API_URL = 'http://192.168.11.103:8080/bibliotheque/api/auth';
 
 export const login = async (email: string, password: string, isAdmin: boolean) => {
     try {
@@ -32,7 +32,7 @@ export const register = async (etudiantData: {
     motDePasse: string;
 }) => {
     try {
-        const response = await axios.post('http://192.168.11.107:8080/bibliotheque/api/etudiants', {
+        const response = await axios.post('http://192.168.11.103:8080/bibliotheque/api/etudiants', {
             ...etudiantData,
             nbrLivreEmprunter: 0
         });

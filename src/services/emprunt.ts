@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'http://192.168.11.107:8080/bibliotheque/api/emprunts';
+const API_URL = 'http://192.168.11.103:8080/bibliotheque/api/emprunts';
 
 interface Emprunt {
     id: number;
@@ -26,9 +26,9 @@ export const emprunterLivre = async (livreId: number): Promise<Emprunt> => {
 
         if (!token || !email) throw new Error('Authentification requise');
 
-        // Récupération de l'ID étudiant comme dans getStudentProfile
+        // Récupération des données de l'étudiant
         const responseEtudiant = await axios.get(
-            `http://192.168.11.107:8080/bibliotheque/api/etudiants/email/${encodeURIComponent(email)}`,
+            `http://192.168.11.103:8080/bibliotheque/api/etudiants/email/${encodeURIComponent(email)}`,
             {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -38,12 +38,16 @@ export const emprunterLivre = async (livreId: number): Promise<Emprunt> => {
             }
         );
 
+        if (responseEtudiant.data.statut === 'BLOQUE') {
+            throw new Error('Votre compte est bloqué. Vous ne pouvez pas emprunter de livre.');
+        }
+
         const etudiantId = responseEtudiant.data.idEt;
 
         const { data } = await axios.post<Emprunt>(
             API_URL,
             {
-                livreId: livreId,  // Format simplifié
+                livreId: livreId,
                 etudiantId: etudiantId
             },
             {
@@ -58,7 +62,9 @@ export const emprunterLivre = async (livreId: number): Promise<Emprunt> => {
     } catch (error) {
         const message = axios.isAxiosError(error)
             ? error.response?.data?.message || error.message
-            : 'Erreur lors de l\'emprunt';
+            : error instanceof Error
+                ? error.message
+                : 'Erreur lors de l\'emprunt';
         throw new Error(message);
     }
 };
@@ -101,9 +107,23 @@ export const getTousEmprunts = async (): Promise<Emprunt[]> => {
             timeout: 5000
         });
 
+        const aujourdHui = new Date();
+        aujourdHui.setHours(0, 0, 0, 0); // Pour ignorer l'heure
+
         return data.sort((a, b) => {
-            if (a.dateRetour === null && b.dateRetour !== null) return -1;
             if (a.dateRetour !== null && b.dateRetour === null) return 1;
+            if (a.dateRetour === null && b.dateRetour !== null) return -1;
+
+            if (a.dateRetour === null && b.dateRetour === null) {
+                const aEnRetard = new Date(a.dateRetourPrevu) < aujourdHui;
+                const bEnRetard = new Date(b.dateRetourPrevu) < aujourdHui;
+
+                if (aEnRetard && !bEnRetard) return -1;
+                if (!aEnRetard && bEnRetard) return 1;
+
+                return new Date(a.dateRetourPrevu).getTime() - new Date(b.dateRetourPrevu).getTime();
+            }
+
             return new Date(b.dateEmprunt).getTime() - new Date(a.dateEmprunt).getTime();
         });
     } catch (error) {
@@ -124,9 +144,8 @@ export const getEmpruntsEtudiant = async (): Promise<Emprunt[]> => {
 
         if (!token || !email) throw new Error('Authentification requise');
 
-        // D'abord récupérer l'ID de l'étudiant
         const responseEtudiant = await axios.get(
-            `http://192.168.11.107:8080/bibliotheque/api/etudiants/email/${encodeURIComponent(email)}`,
+            `http://192.168.11.103:8080/bibliotheque/api/etudiants/email/${encodeURIComponent(email)}`,
             {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -149,10 +168,23 @@ export const getEmpruntsEtudiant = async (): Promise<Emprunt[]> => {
             }
         );
 
+        const aujourdHui = new Date();
+        aujourdHui.setHours(0, 0, 0, 0);
+
         return data.sort((a, b) => {
-            // Les emprunts en cours d'abord, puis les plus récents
-            if (a.dateRetour === null && b.dateRetour !== null) return -1;
             if (a.dateRetour !== null && b.dateRetour === null) return 1;
+            if (a.dateRetour === null && b.dateRetour !== null) return -1;
+
+            if (a.dateRetour === null && b.dateRetour === null) {
+                const aEnRetard = new Date(a.dateRetourPrevu) < aujourdHui;
+                const bEnRetard = new Date(b.dateRetourPrevu) < aujourdHui;
+
+                if (aEnRetard && !bEnRetard) return -1;
+                if (!aEnRetard && bEnRetard) return 1;
+
+                return new Date(a.dateRetourPrevu).getTime() - new Date(b.dateRetourPrevu).getTime();
+            }
+
             return new Date(b.dateEmprunt).getTime() - new Date(a.dateEmprunt).getTime();
         });
     } catch (error) {
@@ -245,7 +277,7 @@ export const changerStatutEtudiant = async (etudiantId: number, nouveauStatut: s
         if (!token) throw new Error('Authentification requise');
 
         const { data } = await axios.patch<Etudiant>(
-            `http://192.168.11.107:8080/bibliotheque/api/etudiants/${etudiantId}/statut`,
+            `http://192.168.11.103:8080/bibliotheque/api/etudiants/${etudiantId}/statut`,
             { statut: nouveauStatut },
             {
                 headers: {

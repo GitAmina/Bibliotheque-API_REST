@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'http://192.168.11.107:8080/bibliotheque/api/etudiants';
+const API_URL = 'http://192.168.11.103:8080/bibliotheque/api/etudiants';
 
 export const getStudentProfile = async () => {
     try {
@@ -88,7 +88,13 @@ export const searchStudents = async (searchTerm: string, searchType: 'code' | 'n
             timeout: 5000
         });
 
-        return Array.isArray(data) ? data : [data];
+        const students = Array.isArray(data) ? data : [data];
+
+        return students.sort((a, b) => {
+            const nomComparison = a.nom.localeCompare(b.nom);
+            if (nomComparison !== 0) return nomComparison;
+            return a.prenom.localeCompare(b.prenom);
+        });
     } catch (error) {
         throw new Error(
             axios.isAxiosError(error)

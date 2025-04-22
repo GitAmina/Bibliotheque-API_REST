@@ -6,7 +6,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { styles } from "./style/stylesearch";
 
-const API_URL = 'http://192.168.11.107:8080/bibliotheque/api/livres';
+const API_URL = 'http://192.168.11.103:8080/bibliotheque/api/livres';
 
 const SearchScreenAdmin = () => {
     const navigation = useNavigation();
@@ -25,12 +25,28 @@ const SearchScreenAdmin = () => {
             let params = {};
 
             if (searchType === 'annee') {
+                if (!yearFilter.trim()) {
+                    Alert.alert('Erreur', 'Veuillez entrer un terme de recherche');
+                    return;
+                }
                 url = `${API_URL}/annee/${yearFilter}`;
             } else if (searchType === 'titre') {
+                if (!searchText.trim()) {
+                    Alert.alert('Erreur', 'Veuillez entrer un terme de recherche');
+                    return;
+                }
                 url = `${API_URL}/recherche/titre/${searchText}`;
             } else if (searchType === 'auteur') {
+                if (!searchText.trim()) {
+                    Alert.alert('Erreur', 'Veuillez entrer un terme de recherche');
+                    return;
+                }
                 url = `${API_URL}/recherche/auteur/${searchText}`;
             } else if (searchType === 'genre') {
+                if (!searchText.trim()) {
+                    Alert.alert('Erreur', 'Veuillez entrer un terme de recherche');
+                    return;
+                }
                 url = `${API_URL}/recherche/genre/${searchText}`;
             }
 
@@ -41,7 +57,7 @@ const SearchScreenAdmin = () => {
                 params: searchType === 'annee' ? {} : params
             });
 
-            setResults(response.data);
+            setResults(response.data.sort((a, b) => a.titre.localeCompare(b.titre)));
         } catch (error) {
             console.error('Search error:', error);
         } finally {

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'http://192.168.11.107:8080/bibliotheque/api';
+const API_URL = 'http://192.168.11.103:8080/bibliotheque/api';
 
 interface Livre {
     idL: number;
@@ -12,15 +12,16 @@ interface Livre {
     disponibilite: boolean;
 }
 
-export const fetchBooks = async () => {
+export const fetchBooks = async (): Promise<Livre[]> => {
     try {
         const token = await AsyncStorage.getItem('token');
-        const response = await axios.get(`${API_URL}/livres`, {
+        const response = await axios.get<Livre[]>(`${API_URL}/livres`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
         });
-        return response.data;
+
+        return response.data.sort((a, b) => a.titre.localeCompare(b.titre));
     } catch (error) {
         console.error('Error fetching books:', error);
         throw error;

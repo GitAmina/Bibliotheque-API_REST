@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'http://192.168.11.107:8080/bibliotheque/api/administrateurs';
+const API_URL = 'http://192.168.11.103:8080/bibliotheque/api/administrateurs';
 
 export const getAdminProfile = async () => {
     try {
