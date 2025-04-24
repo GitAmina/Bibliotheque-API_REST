@@ -32,7 +32,7 @@ const SearchScreen = () => {
                 }
                 url = `${API_URL}/annee/${yearFilter}`;
             } else if (searchType === 'titre') {
-                if (!yearFilter.trim()) {
+                if (!searchText.trim()) {
                     Alert.alert('Erreur', 'Veuillez entrer un terme de recherche');
                     return;
                 }

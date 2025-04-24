@@ -26,7 +26,6 @@ export const emprunterLivre = async (livreId: number): Promise<Emprunt> => {
 
         if (!token || !email) throw new Error('Authentification requise');
 
-        // Récupération des données de l'étudiant
         const responseEtudiant = await axios.get(
             `http://192.168.11.103:8080/bibliotheque/api/etudiants/email/${encodeURIComponent(email)}`,
             {
