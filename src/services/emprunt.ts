@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'http://192.168.11.103:8080/bibliotheque/api/emprunts';
+const API_URL = 'http://192.168.11.101:8080/bibliotheque/api/emprunts';
 
 interface Emprunt {
     id: number;
@@ -27,7 +27,7 @@ export const emprunterLivre = async (livreId: number): Promise<Emprunt> => {
         if (!token || !email) throw new Error('Authentification requise');
 
         const responseEtudiant = await axios.get(
-            `http://192.168.11.103:8080/bibliotheque/api/etudiants/email/${encodeURIComponent(email)}`,
+            `http://192.168.11.101:8080/bibliotheque/api/etudiants/email/${encodeURIComponent(email)}`,
             {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -144,7 +144,7 @@ export const getEmpruntsEtudiant = async (): Promise<Emprunt[]> => {
         if (!token || !email) throw new Error('Authentification requise');
 
         const responseEtudiant = await axios.get(
-            `http://192.168.11.103:8080/bibliotheque/api/etudiants/email/${encodeURIComponent(email)}`,
+            `http://192.168.11.101:8080/bibliotheque/api/etudiants/email/${encodeURIComponent(email)}`,
             {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -276,7 +276,7 @@ export const changerStatutEtudiant = async (etudiantId: number, nouveauStatut: s
         if (!token) throw new Error('Authentification requise');
 
         const { data } = await axios.patch<Etudiant>(
-            `http://192.168.11.103:8080/bibliotheque/api/etudiants/${etudiantId}/statut`,
+            `http://192.168.11.101:8080/bibliotheque/api/etudiants/${etudiantId}/statut`,
             { statut: nouveauStatut },
             {
                 headers: {
